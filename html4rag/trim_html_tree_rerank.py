@@ -34,7 +34,8 @@ if __name__ == '__main__':
     chat_tokenizer_name = args.chat_tokenizer_name
 
 
-    chat_tokenizer_path = "../../huggingface/Meta-Llama-3.1-8B-Instruct"
+    # chat_tokenizer_path = "../../huggingface/Meta-Llama-3.1-8B-Instruct"
+    chat_tokenizer_path = "meta-llama/Llama-3.1-8B-Instruct"
     chat_tokenizer = AutoTokenizer.from_pretrained(chat_tokenizer_path, trust_remote_code=True)
 
     def trim_html_tree_rerank(context_window, dataset):
@@ -109,10 +110,10 @@ if __name__ == '__main__':
 
     processes = []
     # context_windows = ["2k", "4k", "6k", "8k", "10k", "12k", "16k", "20k", "32k", "40k", "64k"]
-    context_windows = ["2k", "4k", "6k", "8k", "12k", "16k", "32k"]
-    # context_windows = ["2k"]
-    datasets = ["asqa", "hotpot-qa", "nq", "trivia-qa", "musique"]
-    # datasets = ["eli5"]
+    # context_windows = ["2k", "4k", "6k", "8k", "12k", "16k", "32k"]
+    context_windows = ["8k"]
+    # datasets = ["asqa", "hotpot-qa", "nq", "trivia-qa", "musique"]
+    datasets = ["hotpot-qa"]
 
     for context_window in context_windows:
         for dataset in datasets:

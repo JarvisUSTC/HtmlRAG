@@ -19,8 +19,8 @@ if __name__ == "__main__":
     rewrite_method = args.rewrite_method
     split = args.split
 
-    datasets = ["asqa", "hotpot-qa", "nq", "trivia-qa", "musique", "eli5"]
-    # datasets = ["nq"]
+    # datasets = ["asqa", "hotpot-qa", "nq", "trivia-qa", "musique", "eli5"]
+    datasets = ["hotpot-qa"]
 
     def simplify_html_lines(dataset):
         data_file = f"./html_data/{dataset}/bing/binghtml-{rewrite_method}-{dataset}-{split}.jsonl"

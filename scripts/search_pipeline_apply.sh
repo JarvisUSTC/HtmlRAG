@@ -1,11 +1,11 @@
 #!/bin/bash
 
 # This script is used to apply search pipeline
-datasets=("asqa" "hotpot-qa" "nq" "trivia-qa" "musique")
-#datasets=("asqa" )
+# datasets=("asqa" "hotpot-qa" "nq" "trivia-qa" "musique")
+datasets=("hotpot-qa" )
 splits=("trainfew")
-#search_methods=("vanilla_search")
-search_methods=("slimplmqr")
+search_methods=("vanilla_search")
+# search_methods=("slimplmqr")
 search_engine="bing"
 address="172.17.8.186:5050"
 

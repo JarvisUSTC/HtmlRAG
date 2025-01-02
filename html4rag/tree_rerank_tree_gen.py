@@ -46,7 +46,7 @@ if __name__ == "__main__":
 
     loguru.logger.info(f"ckpt version: {ckpt_version}, path: {ckpt_path}")
     loguru.logger.info(f"max node words: {max_node_words}")
-    assert ckpt_version in ckpt_path, f"ckpt version {ckpt_version} mismatch with ckpt path {ckpt_path}"
+    # assert ckpt_version in ckpt_path, f"ckpt version {ckpt_version} mismatch with ckpt path {ckpt_path}"
     max_context_window = re.match(r"(\d+)k", context_window).group(1)
     max_context_window = int(max_context_window) * 1000
     #  remove low prob paths pointed tags
@@ -57,7 +57,8 @@ if __name__ == "__main__":
     if chat_tokenizer_name == "bc":
         chat_tokenizer_path = "../../huggingface/Baichuan2-7B-Chat/"
     elif chat_tokenizer_name == "llama":
-        chat_tokenizer_path = "../../huggingface/Meta-Llama-3.1-70B-Instruct/"
+        # chat_tokenizer_path = "../../huggingface/Meta-Llama-3.1-70B-Instruct/"
+        chat_tokenizer_path = "meta-llama/Llama-3.1-8B-Instruct"
     else:
         raise ValueError(f"chat_tokenizer_name {chat_tokenizer_name} not supported")
     chat_tokenizer = AutoTokenizer.from_pretrained(chat_tokenizer_path, trust_remote_code=True)
@@ -99,16 +100,6 @@ if __name__ == "__main__":
         shard_model.to(f"cuda:{rank}").eval()
         shard_pool.append(shard_model)
 
-
-    #  copy model to all devices
-    if device == "cuda" and parallel_size > 1:
-        for rank in range(parallel_size):
-            thread = threading.Thread(target=init_shard_model, args=(rank,))
-            thread.start()
-            thread_pool.append(thread)
-        for thread in thread_pool:
-            thread.join()
-
     loguru.logger.info(f"Reading data from {data_file}")
     if args.mini_dataset:
         data_lines = data_lines[:10]
@@ -121,6 +112,42 @@ if __name__ == "__main__":
     if not os.path.exists(os.path.dirname(output_file)):
         os.makedirs(os.path.dirname(output_file), exist_ok=True)
 
+    def process_single_gpu():
+        """Process data using a single GPU."""
+        loguru.logger.info(f"Initializing model on a single GPU")
+        init_shard_model(0)  # Only initialize one model on cuda:0
+
+        for idx, data_line in enumerate(data_lines):
+            try:
+                question = data_line['question']
+                coarse_html_trim = data_line["html_trim"]
+
+                # Generate HTML tree
+                html_res = shard_pool[0].generate_html_tree(
+                    node_tokenizer, 
+                    [question], 
+                    [coarse_html_trim]
+                )
+
+                # Remove unnecessary keys and prepare result
+                data_line.pop(f'{rewrite_method}_results', None)
+                data_line.pop(f'{rewrite_method}_rewrite', None)
+
+                res_lines[idx] = {**data_line, **html_res[0]}
+                res_lines[idx]["html_trim"] = trim_html_tree(
+                    html=html_res[0]["html"],
+                    paths=html_res[0]["paths"],
+                    is_leaf=html_res[0]["is_leaf"],
+                    node_tree=html_res[0]["node_tree"],
+                    chat_tokenizer=chat_tokenizer,
+                    node_tokenizer=node_tokenizer,
+                    max_context_window=max_context_window,
+                )
+            except Exception as e:
+                loguru.logger.error(f"Error in processing line {idx}: {e}")
+                traceback.print_exc()
+
+            pbar.update(1)
 
     def start_thread(rank):
         while len(data_lines) > 0:
@@ -160,14 +187,24 @@ if __name__ == "__main__":
                             f.write(json.dumps(res_lines[idx], ensure_ascii=True) + "\n")
             pbar.update(1)
 
+    #  copy model to all devices
+    if device == "cuda" and parallel_size > 1:
+        for rank in range(parallel_size):
+            thread = threading.Thread(target=init_shard_model, args=(rank,))
+            thread.start()
+            thread_pool.append(thread)
+        for thread in thread_pool:
+            thread.join()
 
-    for i in range(len(shard_pool)):
-        thread = threading.Thread(target=start_thread, args=(i,))
-        thread.start()
-        thread_pool.append(thread)
+        for i in range(len(shard_pool)):
+            thread = threading.Thread(target=start_thread, args=(i,))
+            thread.start()
+            thread_pool.append(thread)
 
-    for thread in thread_pool:
-        thread.join()
+        for thread in thread_pool:
+            thread.join()
+    else:
+        process_single_gpu()
 
     pbar.close()
 

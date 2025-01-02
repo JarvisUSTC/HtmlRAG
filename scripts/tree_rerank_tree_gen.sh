@@ -19,7 +19,8 @@ rerank_model="bgelargeen"
 
 chat_tokenizer_name="llama"
 
-datasets=("asqa" "hotpot-qa" "nq" "trivia-qa" "musique" "eli5")
+# datasets=("asqa" "hotpot-qa" "nq" "trivia-qa" "musique" "eli5")
+datasets=("hotpot-qa")
 #datasets=("asqa" "hotpot-qa" "nq" "trivia-qa" "musique")
 #context_windows=("1k" "2k" "4k" "8k" "16k")
 context_windows=("4k")

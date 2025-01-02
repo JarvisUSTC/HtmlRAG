@@ -6,7 +6,7 @@ import threading
 
 import bs4
 import loguru
-from langchain_community.embeddings import HuggingFaceHubEmbeddings
+from langchain_community.embeddings import HuggingFaceHubEmbeddings,HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
 from tqdm import tqdm
 from typing import List
@@ -71,13 +71,14 @@ if __name__ == "__main__":
         query_instruction_for_retrieval = "Instruct: Given a web search query, retrieve relevant passages that answer the query\nQuery: "
     else:
         raise NotImplementedError(f"rerank model {rerank_model} not implemented")
-    tokenizer_path = "../../huggingface/e5-mistral-7b-instruct"
+    tokenizer_path = "intfloat/e5-mistral-7b-instruct"
     tokenizer=AutoTokenizer.from_pretrained(tokenizer_path, trust_remote_code=True)
 
-    embedder = TEIEmbeddings(
-        model=args.url,
-        huggingfacehub_api_token="a-default-token",
-        model_kwargs={"truncate": True})
+    # embedder = TEIEmbeddings(
+    #     model=args.url,
+    #     huggingfacehub_api_token="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",
+    #     model_kwargs={"truncate": True})
+    embedder = HuggingFaceEmbeddings(model_name=args.url)
 
     data_file = f"./html_data/{dataset}/{search_engine}/{search_engine}html-{rewrite_method}-{dataset}-simple-{split}.jsonl"
     data_lines = [json.loads(line) for line in open(data_file)]
@@ -96,7 +97,7 @@ if __name__ == "__main__":
             htmls = [h for h in htmls if h.strip()]
             soup = bs4.BeautifulSoup("", 'html.parser')
             for html in htmls:
-                soup.append(bs4.BeautifulSoup(html, 'html.parser'))
+                soup.append(bs4.BeautifulSoup(html, 'html.parser')) # 对多个html进行合并
             split_res = split_tree(soup, max_node_words=max_node_words)
             path_tags = [res[0] for res in split_res]
             paths = [res[1] for res in split_res]

@@ -1,0 +1,98 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python Debugger: Current File",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Python: Run chat_inference.py",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/html4rag/chat_inference.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--multi_docs", "top10",
+                "--chat_model", "llama8b4k",
+                "--dataset", "hotpot-qa",
+                "--split", "test",
+                "--reference_format", "tree-rerank-tree-gen",
+                "--url", "http://llama31-8b-vllm-2gpus.search.cls-3nbemh6i.ml.baichuan-inc.com/generate",
+                "--rerank_model", "bgelargeen",
+                "--rewrite_method", "slimplmqr",
+                "--src_granularity", "256",
+                "--granularity", "128",
+                "--version", "v1008",
+                "--offline"
+            ]
+        },
+        {
+            "name": "Python: Run simplify_html.py",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/html4rag/simplify_html.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--rewrite_method", "slimplmqr",
+                "--split", "test",
+                // "--keep_attr",
+            ]
+        },
+        {
+            "name": "Python: Run tree_rerank.py",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/html4rag/tree_rerank.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--dataset", "hotpot-qa",
+                "--split", "test",
+                "--url", "BAAI/bge-large-en",
+                "--mini_dataset",
+                "--max_node_words", "256",
+            ]
+        },
+        {
+            "name": "Python: Run trim_html_tree_rerank.py",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/html4rag/trim_html_tree_rerank.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--split", "test",
+                "--rewrite_method", "slimplmqr",
+                "--search_engine", "bing",
+                "--rerank_model", "bgelargeen",
+                "--max_node_words", "256",
+                "--chat_tokenizer_name", "llama"
+            ]
+        },
+        {
+            "name": "Python: Run tree_rerank_tree_gen.py",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/html4rag/tree_rerank_tree_gen.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--dataset", "hotpot-qa",
+                "--split", "test",
+                "--rewrite_method", "slimplmqr",
+                "--search_engine", "bing",
+                "--ckpt_version", "v1008",
+                "--ckpt_path", "zstanjj/HTML-Pruner-Llama-1B",
+                "--context_window", "4k",
+                "--fine_trim_ratio", "custom",
+                "--rerank_model", "bgelargeen",
+                "--chat_tokenizer_name", "llama",
+                "--src_max_node_words", "256",
+                "--max_node_words", "128"
+            ]
+        }
+    ]
+}

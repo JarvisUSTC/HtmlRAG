@@ -829,13 +829,14 @@ class Qwen2Processor(Processor):
 
 if __name__ == '__main__':
     # model_path = '../../../huggingface/Phi-3.5-mini-instruct/'
-    model_path = '../../../model/Llama-3.2-1B-Instruct/'
+    # model_path = '../../../model/Llama-3.2-1B-Instruct/'
+    model_path = 'microsoft/Phi-3.5-mini-instruct'
     tokenizer = AutoTokenizer.from_pretrained(model_path, use_fast=False, trust_remote_code=True)
     print(f"model max length: {tokenizer.model_max_length}")
     for processor_class in [LlamaProcessor]:
         processor = processor_class(tokenizer)
         dataset = SupervisedDataset(
-            'experiments/v1107.json5',
+            'experiments/sample-train.json5',
             processor,
             max_length=131072,
             overwrite=True,
